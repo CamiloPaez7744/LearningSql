@@ -19,13 +19,31 @@ CREATE TABLE "public"."language" (
 ALTER TABLE countrylanguage
 ADD COLUMN languagecode varchar(3);
 
+SELECT DISTINCT
+"language" FROM countrylanguage ORDER BY "language" asc;
+
+insert into "language" (name)
+SELECT DISTINCT
+"language" FROM countrylanguage ORDER BY "language" asc;
 
 -- Empezar con el select para confirmar lo que vamos a actualizar
+select 
+cl."language",
+(select name from "language" l where l.name = cl.languagecode) 
+FROM countrylanguage cl;
 
 -- Actualizar todos los registros
+UPDATE countrylanguage
+SET languagecode = (SELECT code FROM "language" l WHERE l.name = countrylanguage.language);
 
 -- Cambiar tipo de dato en countrylanguage - languagecode por int4
+ALTER TABLE countrylanguage
+ALTER COLUMN languagecode TYPE int4 USING languagecode::integer;
 
 -- Crear el forening key y constraints de no nulo el language_code
+ALTER TABLE countrylanguage
+ADD CONSTRAINT fk_language
+FOREIGN KEY (languagecode)
+REFERENCES language (code);
 
 -- Revisar lo creado
