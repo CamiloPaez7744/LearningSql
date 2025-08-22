@@ -90,3 +90,26 @@ WITH RECURSIVE bosses AS (
 	INNER JOIN bosses ON bosses.id = e.report_to
 )
 SELECT * FROM bosses;
+
+
+-- Levels Organizational structure recursive CTE 
+WITH RECURSIVE bosses AS (
+	SELECT id, name, report_to, 1 as "depth" from employees WHERE id = 1
+	UNION
+	SELECT e.id, e.name, e.report_to, "depth" + 1 from employees e
+	INNER JOIN bosses ON bosses.id = e.report_to
+	WHERE "depth" < 2
+)
+SELECT * FROM bosses;
+
+-- Levels Organizational structure recursive CTE and name
+WITH RECURSIVE bosses AS (
+	SELECT id, name, report_to, 1 as "depth" from employees WHERE id = 1
+	UNION
+	SELECT e.id, e.name, e.report_to, "depth" + 1 from employees e
+	INNER JOIN bosses ON bosses.id = e.report_to
+	WHERE "depth" < 2
+)
+SELECT bosses.*, employees.name as report_to_name FROM bosses
+LEFT JOIN employees ON bosses.report_to = employees.id
+ORDER BY bosses.depth;
