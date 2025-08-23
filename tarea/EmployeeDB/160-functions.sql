@@ -75,14 +75,56 @@ job_id = employee_job_id;
 
 possible_raise = job_max_salary - current_salary;
 
+IF possible_raise < 0 THEN
+   RAISE EXCEPTION 'The possible raise is negative';
+END IF;
+
 RETURN possible_raise;
 
 END;
 $$ LANGUAGE plpgsql;
 
+-- With RowType
+CREATE
+OR REPLACE FUNCTION max_raise3 (empl_id INTEGER) RETURNS NUMERIC(8, 2) AS $$
+
+DECLARE
+selected_employee employees%ROWTYPE;
+selected_job jobs%ROWTYPE;
+possible_raise NUMERIC(8,2);
+
+BEGIN
+
+SELECT
+  * INTO selected_employee
+FROM
+  employees
+WHERE
+  employee_id = empl_id;
+
+SELECT
+  * INTO selected_job
+FROM
+  jobs
+WHERE
+  job_id = selected_employee.job_id;
+
+possible_raise = selected_job.max_salary - selected_employee.salary;
+
+IF possible_raise < 0 THEN
+   RAISE EXCEPTION 'Person with ID % and name % has a negative possible raise',empl_id, selected_employee.first_name;
+END IF;
+
+RETURN possible_raise;
+
+END;
+$$ LANGUAGE plpgsql;
+
+
 SELECT
   e.employee_id,
   e.first_name,
-  max_raise(e.employee_id)
+  max_raise(e.employee_id),
+  max_raise3(e.employee_id)
 FROM
 employees e;
